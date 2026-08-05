@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import {
   LETRAS_CINETICA,
+  AJUSTES_DEFAULT,
+  FONT_SIZE_PX_DEFAULT,
   evaluarResultado,
+  repositionPx,
   velocidadMs,
   TOTAL_ENSAYOS,
 } from "./protocolo-proteger";
@@ -37,5 +40,9 @@ assert.equal(evaluarResultado(5), "NORMAL");
 assert.equal(evaluarResultado(4), "ANORMAL");
 assert.equal(evaluarResultado(0), "ANORMAL");
 assert.equal(evaluarResultado(10), "NORMAL");
+
+assert.equal(FONT_SIZE_PX_DEFAULT, 52);
+assert.equal(AJUSTES_DEFAULT.sweepPx, 800);
+assert.equal(repositionPx(800), 400);
 
 console.log("protocolo-proteger.test.ts: OK");

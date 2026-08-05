@@ -3,32 +3,40 @@
 /**
  * Clona el comportamiento de:
  *   iniciarCinetica / animarLetra / cinetica en t207armasvision.blade.php
+ * Tamaño/amplitud se fijan al iniciar (ajustes); no se cambian durante la prueba.
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  FONT_SIZE_PX,
   LETRAS_CINETICA,
   REPOSITION_MS,
-  REPOSITION_PX,
-  SWEEP_PX,
   TOTAL_ENSAYOS,
   evaluarResultado,
+  repositionPx,
   velocidadMs,
+  type AjustesCinetica,
   type EnsayoCinetica,
   type ResultadoCinetica,
 } from "@/lib/protocolo-proteger";
 
 interface TestCineticaProps {
+  ajustes: AjustesCinetica;
   onFinished: (result: ResultadoCinetica) => void;
   onCancel: () => void;
 }
 
-export function TestCinetica({ onFinished, onCancel }: TestCineticaProps) {
+export function TestCinetica({
+  ajustes,
+  onFinished,
+  onCancel,
+}: TestCineticaProps) {
+  const sweepPx = ajustes.sweepPx;
+  const repoPx = repositionPx(sweepPx);
+
   const [actual, setActual] = useState(0);
   const [correctas, setCorrectas] = useState(0);
   const [letraVisible, setLetraVisible] = useState(true);
-  const [leftPx, setLeftPx] = useState(-REPOSITION_PX);
+  const [leftPx, setLeftPx] = useState(-repoPx);
   const [transitionMs, setTransitionMs] = useState(0);
   const [running, setRunning] = useState(true);
 
@@ -41,6 +49,8 @@ export function TestCinetica({ onFinished, onCancel }: TestCineticaProps) {
   const idaRef = useRef(true);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const animGenRef = useRef(0);
+  const ajustesRef = useRef(ajustes);
+  ajustesRef.current = ajustes;
 
   const clearTimer = () => {
     if (timerRef.current) {
@@ -49,22 +59,17 @@ export function TestCinetica({ onFinished, onCancel }: TestCineticaProps) {
     }
   };
 
-  /**
-   * Equivalente a animarLetra(ida) de Proteger.
-   * - Si reiniciar: reposiciona a ±400px "fast", muestra letra, arranca animación
-   * - Si no: mueve ±800px a velocidad del estímulo actual, luego invierte sentido
-   */
   const animarLetra = useCallback((ida: boolean) => {
     if (pararRef.current) return;
     const gen = animGenRef.current;
+    const sweep = ajustesRef.current.sweepPx;
+    const repo = repositionPx(sweep);
 
     if (reiniciarRef.current) {
       reiniciarRef.current = false;
-      // if ((actual + 1) % 2 == 0) start from +400 going left (ida=false)
-      // else start from -400 going right (ida=true)
       const even = (actualRef.current + 1) % 2 === 0;
-      const startLeft = even ? REPOSITION_PX : -REPOSITION_PX;
-      const nextIda = !even; // even → animarLetra(false); odd → animarLetra(true)
+      const startLeft = even ? repo : -repo;
+      const nextIda = !even;
 
       setLetraVisible(false);
       setTransitionMs(0);
@@ -73,7 +78,6 @@ export function TestCinetica({ onFinished, onCancel }: TestCineticaProps) {
       timerRef.current = setTimeout(() => {
         if (animGenRef.current !== gen || pararRef.current) return;
         setLetraVisible(true);
-        // jQuery "fast" reposition then call animarLetra
         timerRef.current = setTimeout(() => {
           if (animGenRef.current !== gen || pararRef.current) return;
           animarLetra(nextIda);
@@ -85,7 +89,7 @@ export function TestCinetica({ onFinished, onCancel }: TestCineticaProps) {
     idaRef.current = ida;
     const vel = velocidadMs(actualRef.current);
     setTransitionMs(vel);
-    setLeftPx((prev) => (ida ? prev + SWEEP_PX : prev - SWEEP_PX));
+    setLeftPx((prev) => (ida ? prev + sweep : prev - sweep));
 
     timerRef.current = setTimeout(() => {
       if (animGenRef.current !== gen || pararRef.current) return;
@@ -93,8 +97,8 @@ export function TestCinetica({ onFinished, onCancel }: TestCineticaProps) {
     }, vel);
   }, []);
 
-  // Inicio = iniciarCinetica()
   useEffect(() => {
+    const repo = repositionPx(ajustes.sweepPx);
     pararRef.current = false;
     animGenRef.current += 1;
     actualRef.current = 0;
@@ -106,9 +110,8 @@ export function TestCinetica({ onFinished, onCancel }: TestCineticaProps) {
     setRunning(true);
     setLetraVisible(true);
     setTransitionMs(REPOSITION_MS);
-    setLeftPx(-REPOSITION_PX);
+    setLeftPx(-repo);
 
-    // $("#letra-cinetica").animate({ left: "-400px" }, "fast", () => animarLetra(true));
     const gen = animGenRef.current;
     timerRef.current = setTimeout(() => {
       if (animGenRef.current !== gen) return;
@@ -119,6 +122,8 @@ export function TestCinetica({ onFinished, onCancel }: TestCineticaProps) {
       pararRef.current = true;
       clearTimer();
     };
+    // Ajustes fijos al montar: no re-ejecutar si el padre re-renderiza
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [animarLetra]);
 
   const responder = (correcto: boolean) => {
@@ -139,15 +144,11 @@ export function TestCinetica({ onFinished, onCancel }: TestCineticaProps) {
       respondedAt: new Date().toISOString(),
     });
 
-    // if (actual < letras.length - 1) actual += 1; else finish
     if (idx < TOTAL_ENSAYOS - 1) {
       actualRef.current = idx + 1;
       setActual(actualRef.current);
       reiniciarRef.current = true;
       setLetraVisible(false);
-      // La animación en curso terminará y verá reiniciar, o forzamos ciclo:
-      // En Proteger: reiniciar=true y al siguiente callback de animate se reposiciona.
-      // Aquí interrumpimos el tramo actual y reposicionamos de inmediato.
       clearTimer();
       animGenRef.current += 1;
       animarLetra(idaRef.current);
@@ -168,8 +169,9 @@ export function TestCinetica({ onFinished, onCancel }: TestCineticaProps) {
         resultado,
         t207cinetica: resultado,
         ensayos: [...ensayosRef.current],
+        ajustes: { ...ajustesRef.current },
         notas:
-          "Clon del Test CINETICA de Proteger (t207armasvision). Umbral: correctas > 4 → NORMAL. PDF referencia: agudeza visual cinetica (<=20/60).",
+          "Protocolo Test CINETICA Proteger (t207armasvision). Umbral: correctas > 4 → NORMAL. Referencia PDF: agudeza visual cinetica (<=20/60).",
       };
       onFinished(payload);
     }
@@ -186,26 +188,24 @@ export function TestCinetica({ onFinished, onCancel }: TestCineticaProps) {
 
   return (
     <div className="flex flex-1 flex-col">
-      <header className="flex items-center justify-between border-b border-slate-800 bg-slate-900 px-4 py-3 text-sm text-slate-400">
-        <span>Test CINETICA · protocolo Proteger (t207)</span>
+      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-400">
+        <span>Test CINETICA · Proteger (t207)</span>
         <span>
-          Estímulo {actual + 1}/{TOTAL_ENSAYOS} · Correctas ({correctas})
+          Estímulo {actual + 1}/{TOTAL_ENSAYOS} · Correctas ({correctas}) ·{" "}
+          {ajustes.fontSizePx}px
         </span>
       </header>
 
-      {/* Área de animación — modal Proteger: height 200px, padding-top 80px, font 52px bold */}
       <div className="relative flex min-h-[280px] flex-1 items-start justify-center overflow-hidden bg-white pt-20">
         <span
           className="select-none font-bold text-black"
           style={{
-            fontSize: FONT_SIZE_PX,
+            fontSize: ajustes.fontSizePx,
             position: "relative",
             left: leftPx,
             display: letraVisible ? "inline-block" : "none",
             transition:
-              transitionMs > 0
-                ? `left ${transitionMs}ms linear`
-                : "none",
+              transitionMs > 0 ? `left ${transitionMs}ms linear` : "none",
           }}
           aria-label={`Estímulo ${letra}`}
         >
@@ -213,13 +213,13 @@ export function TestCinetica({ onFinished, onCancel }: TestCineticaProps) {
         </span>
       </div>
 
-      <footer className="border-t border-slate-800 bg-slate-900 px-4 py-6">
+      <footer className="border-t border-slate-700 bg-slate-900 px-4 py-6">
         <div className="flex flex-wrap items-center justify-center gap-3">
           <button
             type="button"
             disabled={!running}
             onClick={() => responder(true)}
-            className="rounded-lg bg-green-600 px-6 py-3 text-sm font-semibold text-white hover:bg-green-500 disabled:opacity-40"
+            className="rounded border border-green-800 bg-green-700 px-6 py-3 text-sm font-medium text-white hover:bg-green-600 disabled:opacity-40"
           >
             Respuesta correcta ({correctas})
           </button>
@@ -227,7 +227,7 @@ export function TestCinetica({ onFinished, onCancel }: TestCineticaProps) {
             type="button"
             disabled={!running}
             onClick={() => responder(false)}
-            className="rounded-lg bg-red-600 px-6 py-3 text-sm font-semibold text-white hover:bg-red-500 disabled:opacity-40"
+            className="rounded border border-red-900 bg-red-800 px-6 py-3 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-40"
           >
             Respuesta incorrecta
           </button>
@@ -236,15 +236,11 @@ export function TestCinetica({ onFinished, onCancel }: TestCineticaProps) {
           <button
             type="button"
             onClick={abortar}
-            className="rounded-lg border border-amber-600 px-4 py-2 text-xs text-amber-400 hover:bg-amber-950"
+            className="rounded border border-slate-600 px-4 py-2 text-xs text-slate-400 hover:bg-slate-800"
           >
             Cancelar
           </button>
         </div>
-        <p className="mt-4 text-center text-xs text-slate-500">
-          Letras: E 5 r T P 7 b y 6 M · Velocidad 2500 ms / 1300 ms · NORMAL si
-          correctas &gt; 4
-        </p>
       </footer>
     </div>
   );

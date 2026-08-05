@@ -1,47 +1,38 @@
-# Test CINETICA — Protocolo Proteger
+# Cinematica Proteger
 
-App **independiente** que clona al pie de la letra el **Test CINETICA** de visión de Proteger/JARVIS (examen armas `t207`).
+Test de **agudeza visual cinética** de Proteger IPS — clon del protocolo **Test CINETICA** (JARVIS / t207 armas visión).
 
-Fuente original:
-
-- `JARVIS/resources/views/t207armasvision.blade.php` → `iniciarCinetica`, `animarLetra`, `cinetica`
-- Botón en `JARVIS/resources/views/armas/vision.blade.php`
-- Campo resultado: **`t207cinetica`** = `NORMAL` | `ANORMAL`
-- PDF: *Agudeza visual cinetica (&lt;=20/60)*
-
-## Protocolo (idéntico a Proteger)
+## Protocolo
 
 | Parámetro | Valor |
 |-----------|--------|
-| Letras (orden) | `E 5 r T P 7 b y 6 M` |
+| Letras | `E 5 r T P 7 b y 6 M` |
 | Ensayos | 10 |
-| Tamaño | 52px bold |
-| Movimiento | Horizontal ±800px (ida/vuelta) |
-| Velocidad | 2500 ms; **1300 ms** si `(índice+1) % 3 == 0` o `% 4 == 0` |
-| Respuesta | Profesional: correcta / incorrecta |
+| Velocidad | 2500 ms / 1300 ms |
 | Resultado | `correctas > 4` → **NORMAL**, si no **ANORMAL** |
+| Campo JARVIS | `t207cinetica` |
 
 ## Ejecutar
 
 ```bash
-cd avc-app
 npm install
 npm run dev
 ```
 
 Abre [http://localhost:3001](http://localhost:3001)
 
+- **Iniciar** — arranca de inmediato (defaults Proteger si no configuró)
+- **Configurar** — tamaño de letra y amplitud de barrido (opcional)
+
 ```bash
-npm test    # valida letras, velocidades y umbral
+npm test
 npm run build && npm start
 ```
 
-## Estructura
+## Impresión
 
-```
-src/lib/protocolo-proteger.ts   # constantes y scoring del protocolo
-src/components/TestCinetica.tsx # animación + botones
-src/app/page.tsx                # inicio / prueba / resultado
-```
+El informe incluye logo Proteger IPS, **fecha de la práctica**, resultado y detalle de ensayos. Sin bloques de firma.
 
-No depende de Laravel ni de la base de JARVIS.
+## Licencia
+
+Uso interno Proteger IPS.

@@ -22,8 +22,23 @@ export const LETRAS_CINETICA = [
 
 export type LetraCinetica = (typeof LETRAS_CINETICA)[number];
 
-/** font-size: 52px; font-weight: bold (modal Proteger) */
-export const FONT_SIZE_PX = 52;
+/** font-size por defecto: 52px bold (modal Proteger). Ajustable solo antes de iniciar. */
+export const FONT_SIZE_PX_DEFAULT = 52;
+export const FONT_SIZE_PX_MIN = 24;
+export const FONT_SIZE_PX_MAX = 120;
+
+/** Ajustes de presentación (no cambian el protocolo de letras/velocidad/umbral). */
+export interface AjustesCinetica {
+  /** Tamaño de la letra en pantalla (px). Default Proteger: 52 */
+  fontSizePx: number;
+  /** Amplitud del barrido horizontal. Default Proteger: 800 */
+  sweepPx: number;
+}
+
+export const AJUSTES_DEFAULT: AjustesCinetica = {
+  fontSizePx: FONT_SIZE_PX_DEFAULT,
+  sweepPx: 800,
+};
 
 /**
  * Velocidad de un tramo horizontal (ida o vuelta).
@@ -39,12 +54,12 @@ export function velocidadMs(actual: number): number {
   return 2500;
 }
 
-/** Desplazamiento horizontal total por tramo (jQuery: left += 800px / -= 800px) */
-export const SWEEP_PX = 800;
-
-/** Reposicionamiento al cambiar letra: left 400px o -400px con duration "fast" (~200ms jQuery) */
-export const REPOSITION_PX = 400;
+/** Reposicionamiento al cambiar letra: left ±(sweep/2) con duration "fast" (~200ms jQuery) */
 export const REPOSITION_MS = 200;
+
+export function repositionPx(sweepPx: number): number {
+  return Math.round(sweepPx / 2);
+}
 
 /**
  * Tras responder el último estímulo (índice 9):
@@ -78,4 +93,6 @@ export interface ResultadoCinetica {
   t207cinetica: "NORMAL" | "ANORMAL" | "";
   ensayos: EnsayoCinetica[];
   notas: string;
+  /** Ajustes de presentación usados en la sesión (fijos al iniciar) */
+  ajustes: AjustesCinetica;
 }

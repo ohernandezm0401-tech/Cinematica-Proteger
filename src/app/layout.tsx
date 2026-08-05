@@ -13,10 +13,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Test CINETICA — Protocolo Proteger",
+  title: "Cinematica Proteger — Test CINETICA",
   description:
-    "Clon del Test CINETICA de visión de Proteger/JARVIS (t207armasvision). NORMAL/ANORMAL.",
-  applicationName: "Test CINETICA",
+    "Test de agudeza visual cinética de Proteger IPS (protocolo t207 / Test CINETICA).",
+  applicationName: "Cinematica Proteger",
   manifest: "/manifest.webmanifest",
 };
 

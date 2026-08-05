@@ -1,7 +1,7 @@
 {
-  "name": "Test CINETICA — Protocolo Proteger",
-  "short_name": "CINETICA",
-  "description": "Clon del Test CINETICA de visión de Proteger/JARVIS",
+  "name": "Cinematica Proteger",
+  "short_name": "Cinematica",
+  "description": "Test de agudeza visual cinética — Proteger IPS",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#020617",
