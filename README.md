@@ -1,18 +1,27 @@
-# AVC — Agudeza Visual Cinemática
+# Test CINETICA — Protocolo Proteger
 
-Aplicación web **independiente** para realizar la prueba de agudeza visual cinemática con **Landolt C en movimiento**.
+App **independiente** que clona al pie de la letra el **Test CINETICA** de visión de Proteger/JARVIS (examen armas `t207`).
 
-- No depende de JARVIS ni de Laravel  
-- Sin backend: todo corre en el navegador  
-- Exporta resultado en JSON / impresión  
-- Lista para PWA (manifest + instalación)
+Fuente original:
 
-## Requisitos
+- `JARVIS/resources/views/t207armasvision.blade.php` → `iniciarCinetica`, `animarLetra`, `cinetica`
+- Botón en `JARVIS/resources/views/armas/vision.blade.php`
+- Campo resultado: **`t207cinetica`** = `NORMAL` | `ANORMAL`
+- PDF: *Agudeza visual cinetica (&lt;=20/60)*
 
-- Node.js 18+ (recomendado 20 o 22)
-- npm 9+
+## Protocolo (idéntico a Proteger)
 
-## Cómo ejecutar (solo esta carpeta)
+| Parámetro | Valor |
+|-----------|--------|
+| Letras (orden) | `E 5 r T P 7 b y 6 M` |
+| Ensayos | 10 |
+| Tamaño | 52px bold |
+| Movimiento | Horizontal ±800px (ida/vuelta) |
+| Velocidad | 2500 ms; **1300 ms** si `(índice+1) % 3 == 0` o `% 4 == 0` |
+| Respuesta | Profesional: correcta / incorrecta |
+| Resultado | `correctas > 4` → **NORMAL**, si no **ANORMAL** |
+
+## Ejecutar
 
 ```bash
 cd avc-app
@@ -20,50 +29,19 @@ npm install
 npm run dev
 ```
 
-Abre [http://localhost:3000](http://localhost:3000) — redirige a `/setup`.
-
-### Producción
+Abre [http://localhost:3001](http://localhost:3001)
 
 ```bash
-cd avc-app
-npm run build
-npm start
+npm test    # valida letras, velocidades y umbral
+npm run build && npm start
 ```
-
-### Tests unitarios (geometría y scoring)
-
-```bash
-npm test
-```
-
-## Flujo de la prueba
-
-1. **Setup** — ojo (OD/OI/AO), distancia (1/2/3/6 m), velocidad, ensayos por nivel  
-2. **Calibrar** (opcional) — alinear rectángulo con tarjeta de crédito → PPI  
-3. **Test** — Landolt C se mueve; el paciente dice la dirección; el profesional marca en el pad  
-4. **Resultado** — logMAR final, equivalente Snellen, % aciertos, export JSON  
-
-## Protocolo v1
-
-| Parámetro | Valor |
-|-----------|--------|
-| Estímulo | Landolt C, 4 direcciones |
-| Trayectoria | Horizontal L→R o R→L |
-| Escala | logMAR (pasos 0.1) |
-| Pase de nivel | ≥ 80 % aciertos en el bloque |
-| Parada | 2 fallos consecutivos de nivel o logMAR mínimo |
-| Respuesta | Verbal del paciente; profesional marca |
 
 ## Estructura
 
 ```
-avc-app/
-  src/app/           # rutas Next.js (setup, calibrate, test, result)
-  src/components/    # UI
-  src/lib/           # geometry, scoring, session, motion
-  public/            # manifest PWA e iconos
+src/lib/protocolo-proteger.ts   # constantes y scoring del protocolo
+src/components/TestCinetica.tsx # animación + botones
+src/app/page.tsx                # inicio / prueba / resultado
 ```
 
-## Nota clínica
-
-Herramienta de apoyo al protocolo. La validez del tamaño del optotipo depende de la distancia real del paciente y de la calibración de pantalla. No es un dispositivo médico certificado.
+No depende de Laravel ni de la base de JARVIS.

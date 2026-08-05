@@ -1,8 +1,8 @@
 {
-  "name": "Agudeza Visual Cinemática",
-  "short_name": "AVC",
-  "description": "Prueba Landolt C en movimiento — app independiente",
-  "start_url": "/setup",
+  "name": "Test CINETICA — Protocolo Proteger",
+  "short_name": "CINETICA",
+  "description": "Clon del Test CINETICA de visión de Proteger/JARVIS",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#020617",
   "theme_color": "#020617",

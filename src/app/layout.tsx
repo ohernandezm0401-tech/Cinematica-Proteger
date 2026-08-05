@@ -13,16 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AVC — Agudeza Visual Cinemática",
+  title: "Test CINETICA — Protocolo Proteger",
   description:
-    "Prueba interactiva de agudeza visual cinemática (Landolt C en movimiento). Aplicación independiente.",
-  applicationName: "AVC",
+    "Clon del Test CINETICA de visión de Proteger/JARVIS (t207armasvision). NORMAL/ANORMAL.",
+  applicationName: "Test CINETICA",
   manifest: "/manifest.webmanifest",
-  appleWebApp: {
-    capable: true,
-    title: "AVC",
-    statusBarStyle: "black-translucent",
-  },
 };
 
 export const viewport: Viewport = {

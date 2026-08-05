@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "npx --yes tsx src/lib/geometry.test.ts && npx --yes tsx src/lib/scoring.test.ts"
+    "test": "npx --yes tsx src/lib/protocolo-proteger.test.ts"
   },
   "dependencies": {
     "next": "16.3.0",
