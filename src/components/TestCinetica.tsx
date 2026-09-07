@@ -37,7 +37,7 @@ export function TestCinetica({
   const [correctas, setCorrectas] = useState(0);
   const [letraVisible, setLetraVisible] = useState(true);
   const [leftPx, setLeftPx] = useState(-repoPx);
-  const [transitionMs, setTransitionMs] = useState(0);
+  const [transitionMs, setTransitionMs] = useState(REPOSITION_MS);
   const [running, setRunning] = useState(true);
 
   const actualRef = useRef(0);
@@ -50,7 +50,11 @@ export function TestCinetica({
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const animGenRef = useRef(0);
   const ajustesRef = useRef(ajustes);
-  ajustesRef.current = ajustes;
+  const animarLetraRef = useRef<(ida: boolean) => void>(() => {});
+
+  useEffect(() => {
+    ajustesRef.current = ajustes;
+  }, [ajustes]);
 
   const clearTimer = () => {
     if (timerRef.current) {
@@ -80,7 +84,7 @@ export function TestCinetica({
         setLetraVisible(true);
         timerRef.current = setTimeout(() => {
           if (animGenRef.current !== gen || pararRef.current) return;
-          animarLetra(nextIda);
+          animarLetraRef.current(nextIda);
         }, REPOSITION_MS);
       }, 16);
       return;
@@ -93,24 +97,21 @@ export function TestCinetica({
 
     timerRef.current = setTimeout(() => {
       if (animGenRef.current !== gen || pararRef.current) return;
-      animarLetra(!ida);
+      animarLetraRef.current(!ida);
     }, vel);
   }, []);
 
   useEffect(() => {
-    const repo = repositionPx(ajustes.sweepPx);
+    animarLetraRef.current = animarLetra;
+  }, [animarLetra]);
+
+  useEffect(() => {
     pararRef.current = false;
     animGenRef.current += 1;
     actualRef.current = 0;
     correctasRef.current = 0;
     ensayosRef.current = [];
     startedAtRef.current = new Date().toISOString();
-    setActual(0);
-    setCorrectas(0);
-    setRunning(true);
-    setLetraVisible(true);
-    setTransitionMs(REPOSITION_MS);
-    setLeftPx(-repo);
 
     const gen = animGenRef.current;
     timerRef.current = setTimeout(() => {
@@ -122,8 +123,6 @@ export function TestCinetica({
       pararRef.current = true;
       clearTimer();
     };
-    // Ajustes fijos al montar: no re-ejecutar si el padre re-renderiza
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [animarLetra]);
 
   const responder = (correcto: boolean) => {
